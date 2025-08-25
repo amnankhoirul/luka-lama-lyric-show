@@ -189,9 +189,6 @@ export const LyricAnimation = () => {
           <h1 className="text-4xl md:text-6xl font-bold text-gradient mb-4">
             Su Jauh Sa Tanam Hati Tapi Tra Hasil
           </h1>
-          <p className="text-muted-foreground text-lg">
-            Animated Lyric Display
-          </p>
         </div>
 
         {/* Lyrics container */}
