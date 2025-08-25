@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Play, Pause, RotateCcw } from "lucide-react";
 import { ParticleBackground } from "./ParticleBackground";
@@ -50,6 +50,7 @@ export const LyricAnimation = () => {
   const [currentLine, setCurrentLine] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
+  const lyricsRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -71,6 +72,14 @@ export const LyricAnimation = () => {
 
   useEffect(() => {
     setProgress((currentLine / (lyrics.length - 1)) * 100);
+    
+    // Auto-scroll to current line
+    if (lyricsRefs.current[currentLine]) {
+      lyricsRefs.current[currentLine]?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+    }
   }, [currentLine]);
 
   const handlePlayPause = () => {
@@ -108,7 +117,7 @@ export const LyricAnimation = () => {
         {/* Title */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-6xl font-bold text-gradient mb-4">
-            Luka Trauma
+            Su Jauh Sa Tanam Hati Tapi Tra Hasil
           </h1>
           <p className="text-muted-foreground text-lg">
             Animated Lyric Display
@@ -118,10 +127,11 @@ export const LyricAnimation = () => {
         {/* Lyrics container */}
         <div className="w-full max-w-4xl mx-auto mb-8">
           <div className="bg-card/20 backdrop-blur-sm rounded-xl p-8 md:p-12 border border-border/20">
-            <div className="space-y-6 max-h-96 overflow-y-auto">
+            <div className="space-y-6 max-h-96 overflow-hidden">
               {lyrics.map((line, index) => (
                 <div
                   key={index}
+                  ref={(el) => (lyricsRefs.current[index] = el)}
                   className={getLyricClass(index)}
                   style={{
                     transitionDelay: index === currentLine ? "0ms" : `${index * 100}ms`
