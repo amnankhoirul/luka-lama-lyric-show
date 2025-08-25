@@ -28,7 +28,7 @@ const lyrics = [
   "",
   "Nanti pasti ko mengerti",
   "Stelah sa hilang dan sa jauh untuk pergi",
-  "Ko akan tau bagaimana sa sayang ko tapi",
+  "Ko akan tau bagitmana sa sayang ko tapi",
   "Sa rasa percuma ko terus ungkit",
   "Ungkit luka lama yang buat sa trauma",
   "",
@@ -46,17 +46,63 @@ const lyrics = [
   "Setiap sa buka ko HP macam sa rasa pingsan"
 ];
 
+// Timing untuk setiap baris sesuai irama lagu (dalam milidetik)
+const lyricTimings = [
+  3000, // "Tapi sa su terlukai" - pembuka pelan
+  3500, // "Su jauh sa tanam hati tapi tra hasil" - judul, lebih panjang
+  3200, // "Cobalah dewasa ko su bukan anak kecil"
+  3300, // "Sa coba imbangi namun hati tra kuat"
+  3400, // "Tersiksa makan hati dan itu sa su muak"
+  1500, // jeda
+  2800, // "Nanti pasti ko mengerti" - reff mulai
+  3600, // "Stelah sa hilang dan sa jauh untuk pergi" - panjang
+  3400, // "Ko akan tau bagaimana sa sayang ko tapi"
+  3200, // "Sa rasa percuma ko terus ungkit"
+  3500, // "Ungkit luka lama yang buat sa trauma" - klimaks
+  2000, // jeda
+  3800, // "Mungkin nanti sa pergi koi akan mengerti" - verse 2
+  3300, // "Percuma sa stay tapi ko tra hargai"
+  3400, // "Menyesal kenal ko wanita tra punya hati"
+  3000, // "I'm tried tapi sa su terlukai"
+  1500, // jeda
+  3500, // "Su jauh sa tanam hati tapi tra hasil" - repeat judul
+  3200, // "Cobalah dewasa ko su bukan anak kecil"
+  3300, // "Sa coba imbangi namun hati tra kuat"
+  3400, // "Tersiksa makan hati dan itu sa su muak"
+  1500, // jeda
+  2800, // "Nanti pasti ko mengerti" - reff repeat
+  3600, // "Stelah sa hilang dan sa jauh untuk pergi"
+  3400, // "Ko akan tau bagaimana sa sayang ko tapi"
+  3200, // "Sa rasa percuma ko terus ungkit"
+  3500, // "Ungkit luka lama yang buat sa trauma"
+  1500, // jeda
+  2500, // "yang buat sa trauma" - echo effect
+  2000, // jeda panjang
+  2800, // "Nanti pasti ko mengerti" - final reff
+  3600, // "Stelah sa hilang dan sa jauh untuk pergi"
+  3400, // "Ko akan tau bagaimana sa sayang ko tapi"
+  3200, // "Sa rasa percuma ko terus ungkit"
+  3500, // "Ungkit luka lama yang buat sa trauma"
+  2000, // jeda
+  4000, // "Sa duduk menangis di sana koi ada tertawa" - outro mulai
+  4200, // "Cerita tra romantis tra sperti adam dan hawa"
+  3800, // "Saling baku sayang hargai setiap insan"
+  4000, // "Setiap sa buka ko HP macam sa rasa pingsan" - ending
+];
+
 export const LyricAnimation = () => {
   const [currentLine, setCurrentLine] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const lyricsRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let timeout: NodeJS.Timeout;
     
     if (isPlaying && currentLine < lyrics.length) {
-      interval = setInterval(() => {
+      const currentTiming = lyricTimings[currentLine] || 3000;
+      timeout = setTimeout(() => {
         setCurrentLine(prev => {
           if (prev >= lyrics.length - 1) {
             setIsPlaying(false);
@@ -64,10 +110,10 @@ export const LyricAnimation = () => {
           }
           return prev + 1;
         });
-      }, 2500); // 2.5 seconds per line
+      }, currentTiming);
     }
 
-    return () => clearInterval(interval);
+    return () => clearTimeout(timeout);
   }, [isPlaying, currentLine]);
 
   useEffect(() => {
@@ -90,12 +136,27 @@ export const LyricAnimation = () => {
     } else {
       setIsPlaying(!isPlaying);
     }
+    
+    // Control audio if available
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play().catch(console.error);
+      }
+    }
   };
 
   const handleReset = () => {
     setCurrentLine(0);
     setIsPlaying(false);
     setProgress(0);
+    
+    // Reset audio if available
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
   };
 
   const getLyricClass = (index: number) => {
@@ -107,6 +168,15 @@ export const LyricAnimation = () => {
   return (
     <div className="relative min-h-screen bg-gradient-lyric overflow-hidden">
       <ParticleBackground />
+      
+      {/* Audio element - hidden */}
+      <audio
+        ref={audioRef}
+        src="/audio/su-jauh-sa-tanam-hati.mp3"
+        preload="auto"
+        loop
+        style={{ display: 'none' }}
+      />
       
       {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/20" />
